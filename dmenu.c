@@ -38,7 +38,7 @@ static char *embed;
 static int bh, mw, mh;
 static int dmx = 0; /* put dmenu at this x offset */
 static int dmy = 0; /* put dmenu at this y offset (measured from the bottom if topbar is 0) */
-static unsigned int dmw = 0; /* make dmenu this wide */
+static int dmw = 0; /* make dmenu this wide */
 static int inputw = 0, promptw;
 static int lrpad; /* sum of left and right padding */
 static size_t cursor;
@@ -667,7 +667,13 @@ setup(void)
 
 		x = info[i].x_org + dmx;
 		y = info[i].y_org + (topbar ? dmy : info[i].height - mh - dmy);
-		mw = (dmw>0 ? dmw : info[i].width);
+
+        // Subtract from total width
+        if (dmw < 0) {
+            dmw = info[i].width + dmw;
+        }
+
+		mw = (dmw > 0 ? dmw : info[i].width);
 		XFree(info);
 	} else
 #endif
@@ -677,6 +683,12 @@ setup(void)
 			    parentwin);
 		x = dmx;
 		y = topbar ? dmy : wa.height - mh - dmy;
+
+        // Subtract from total width
+        if (dmw < 0) {
+            dmw = info[i].width + dmw;
+        }
+
 		mw = (dmw>0 ? dmw : wa.width);
 	}
 	promptw = (prompt && *prompt) ? TEXTW(prompt) - lrpad / 4 : 0;
